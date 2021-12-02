@@ -1,0 +1,7 @@
+<02/12/2021>
+* Sujet: Robot suiveur de ligne
+* TODO:
+- se documenter (os: ev3-dev, lejos et les fonctions à appeler)
+- commencer à réfléchir sur comment distinguer des couleurs
+- récupérer le matériel
+
