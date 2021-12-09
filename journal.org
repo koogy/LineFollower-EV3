@@ -5,3 +5,11 @@
 - commencer à réfléchir sur comment distinguer des couleurs
 - récupérer le matériel
 
+<09/12/2021>
+* matériel donné (ev3, moteurs, capteur, carte SD)
+* TODO :
+  - installer l'OS
+  - faire marcher le capteur
+  - apprendre à distinguer deux couleurs
+  - trouver un moyen de faire des "tests unitaires"
+
