@@ -1,0 +1,59 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\title{Rapport intermédiaire du Projet Long \\ Robot suiveur de ligne}
+\author{CHAU Julien - LY Alexandre}
+\date{Février 2022}
+
+\begin{document}
+
+\maketitle
+
+\section{Présentation générale}
+\subsection{Introduction}
+Les robots Mindstorm sont des modèles de robots conçus par la marque Lego pour être programmable. Doté d'un bloc Lego central qui contrôle le système, d'un set de moteurs et de capteurs de couleur, ils sont conçus à des fins pédagogiques et à pouvoir exécuter des tâches programmables. 
+
+\subsection{Objectif du projet}
+L'objectif final de ce projet est de contruire et programmer un robot Mindstorm à pouvoir suivre un tracé de ligne coloré au sol. Pour ce faire, il devra apprendre à se déplacer et à pouvoir distinguer les couleurs entre le chemin qu'il doit suivre et le sol sur lequel il se trouve. 
+
+La difficulté du projet est l'environnement de développement nouveau, qui faudra apprendre et se familiariser avec, de faire fonctionner correctement le robot et qu'il puisse apprendre à distinger la ligne coloré d'un sol d'un couleur différente. Il doit pouvoir ensuite suivre en continu cette ligne, avec précision, et sans border.
+
+\subsection{Matériels fournis}
+\begin{itemize}
+    \item Brique centrale EV3 contenant un processeur et de plusieurs ports.
+    \item Deux moteurs rotatifs.
+    \item Capteur de lumière ambiente.
+    \item Carte microSD.
+    \item Piles AA.
+\end{itemize}
+
+\section{Tâches réalisées}
+\subsection{Assemblage et installation}
+Pour pouvoir commencer à travailler avec le robot, il faut se munir de la carte microSD et y installer une image pour qu'elle soit compatible lorsqu'on l'insère dans le port de la brique centrale du robot. Le robot se connecte à n'importe quel PC par le biais d'un cable USB.
+
+\subsection{Operating system}
+Le système d'exploitation pour le robot que l'on utilise est LeJOS EV3, incluant une machine virtuelle Java ce qui permet de programmer le robot en langage Java.
+L'installation de LeJOS s'est faite par un plug-in de l'IDE Eclipse.
+
+\subsection{Moteurs/Déplacements}
+Le robot possède deux pieds contenant des moteurs mécaniques, et lui permettent de rouler dans une direction. Il existe plusieurs fonctions de la librairie leJOS qui manipule ces moteurs. Tout d'abord, les moteurs sont des objets de la classe {\it EV3LargeRegulatedMotor}, il faut tout d'abord définir une vitesse avec {\it setPower(int)} avant d'utiliser ensuite les méthodes {\it forward()} et {\it backward()} qui permettent de faire tourner les moteurs vers l'avant ou l'arrière.
+On a réussi à faire fonctionner les moteurs, mais il nous manque certaines pièces pour les attacher au bloc central, et des pneus pour faire rouler le robot.
+
+\subsection{Capteur}
+Le capteur est un objet de classe {\it EV3ColorSensor}, il permet de distinger les couleurs et aussi de mesurer le degré de lumière. On peut récupérer l'intensité de lumière absorbé avec {\it getAmbientMode()} ou les valeurs RGB avec {\it getRGBMode()}. 
+Comme pour les moteurs, il nous manque certaines pièces pour pouvoir attacher le capteur au robot et de pouvoir faire des tests du capteurs avec une hauteur fixe.
+
+
+\section{Difficultés rencontrées}
+L'une des difficultés au début du projet et déjà évoquée à été de ce familiariser avec le fonctionnement du robot et l'environnement de développement, qui sont des sujets nouveaux. LeJOS utilise plusieurs objets et méthodes propre au robot dont il a fallu chercher et se documenter dessus.
+
+Pour les moteurs, à quelques occasions, le programme renvoie une exception lié à l'initialisation des moteurs lors de lancement de tests.
+
+\section{Tâches à accomplir}
+Il reste encore à programmer l'algorithme pour que le robot puisse distinger la ligne du sol. Pour cela, une idée serait de pouvoir récupérer les valeurs d'intensité lumineuses lorsqu'on place le capteur sur la ligne et sur le sol pour distinger les deux.
+
+Il faut ensuite que le robot suit précisement cette ligne. Pour cela, on pourrait calculer une valeur médiane d'intensité lumineuse qui correspond à la séparation entre la ligne et le sol. Le robot suivra en théorie cette bordure et un changement d'intensité signifiera un changement de direction de la ligne.
+
+Enfin, on pourra améliorer la précision du robot en implémentant des algorithmes perfomants, ou avec un système de tests rapide et efficace.
+
+\end{document}
