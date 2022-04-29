@@ -5,21 +5,20 @@ import java.util.Stack;
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
+import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.Port;
 import lejos.hardware.port.SensorPort;
 import lejos.robotics.Color;
 import lejos.utility.Delay;
 
 public class LineFollowerr {
-
 	EV3LargeRegulatedMotor motorA;
 	EV3LargeRegulatedMotor motorB;
-	ColorSensor colorSensor;
-
 	LinesData linesData;
+	ColorSensor colorSensor;
 	Color currentColor;
 
-	double kp = 6;
+	double kp = 6; // TP/error
 	double ki = 0;
 	double kd = 0;
 	int tp = 200;
@@ -34,18 +33,23 @@ public class LineFollowerr {
 	int distanceLine;
 	int distanceBackground;
 	int distanceMiddleLb;
+	int distanceIntersection;
 	int direction;
 
 	boolean isLost = false;
 
 	long startTime;
 	long endTime = 0;
-	long lastTime = 0;
 
+	long lastTime = 0;
+	long duration;
 	Stack<Move> moves;
 	int index = 0;
 
 	public LineFollowerr(Port port) {
+		motorA = new EV3LargeRegulatedMotor(MotorPort.A);
+		motorB = new EV3LargeRegulatedMotor(MotorPort.B);
+
 		colorSensor = new ColorSensor(port);
 		linesData = new LinesData(colorSensor);
 		moves = new Stack<>();
@@ -54,27 +58,30 @@ public class LineFollowerr {
 	public void start() {
 		/* Button.waitForAnyPress(); */
 		int outside = 0;
-		while (Button.ESCAPE.isUp()) {
+
+		while (Button.ENTER.isUp()) {
 			collectData();
 
 			if (distanceBackground < 10) {
-				outside++;
 				isLost = true;
-				System.out.println("I AM LOST BOI ! ");
-
-				if (outside > 10) {
-					Sound.beep();
-					findLine();
-				}
+				outside++;
 			} else {
+				System.out.println("reset");
 				outside = 0;
 				isLost = false;
 				moves.clear();
-				index = 0;
 			}
 
 			pid();
+
+			if (outside == 10) {
+				System.out.println("BEEP BEPEP");
+				Sound.beep();
+				findLine();
+			}
+
 		}
+
 	}
 
 	public void collectData() {
@@ -82,6 +89,7 @@ public class LineFollowerr {
 		distanceLine = LinesData.calculateColorDistance(currentColor, linesData.getLine());
 		distanceBackground = LinesData.calculateColorDistance(currentColor, linesData.getBackground());
 		distanceMiddleLb = LinesData.calculateColorDistance(currentColor, linesData.getMiddleLineBgColor());
+		distanceIntersection = LinesData.calculateColorDistance(currentColor, linesData.getIntersectionColor());
 		direction = getDirection();
 
 		// System.out.println(distanceLine + " " + distanceBackground + " " +
@@ -92,14 +100,17 @@ public class LineFollowerr {
 	public void findLine() {
 		isLost = false;
 
-		// Backtracking
-		while (moves.size() != 0) {
-			Move currentMove = moves.pop();
-			setMotorSpeed(-currentMove.leftSpeed, -currentMove.rightSpeed);
-			Delay.nsDelay(currentMove.duration);
+		while (moves.size() > 0) {
+			try {
+				Move currentMove = moves.pop();
+				setMotorSpeed(-currentMove.leftSpeed, -currentMove.rightSpeed);
+				Delay.nsDelay(currentMove.duration);
+
+			} catch (Exception e) {
+				System.out.println("FIND LINE");
+			}
 		}
 
-		// Go straight until line found
 		while (true) {
 			setMotorSpeed(tp, tp);
 			collectData();
@@ -112,6 +123,7 @@ public class LineFollowerr {
 
 	public void pid() {
 
+		System.out.println("is lost : " + isLost);
 		error = distanceMiddleLb * direction;
 		derivative = error - lastError;
 
@@ -138,22 +150,21 @@ public class LineFollowerr {
 
 		lastError = error;
 
-		startTime = System.nanoTime();
-
 	}
 
 	public int getDirection() {
-		int min = Math.min(distanceLine, (Math.min(distanceBackground, distanceMiddleLb)));
+		int min = Math.min(Math.min(distanceIntersection, distanceLine),
+				(Math.min(distanceBackground, distanceMiddleLb)));
 		direction = 0;
 		if (min == distanceLine) {
 			direction = 1;
-		} else if (min == distanceBackground) {
+		} else if (min == distanceBackground || min == distanceIntersection) {
 			direction = -1;
 		} else if (min == distanceMiddleLb) {
 			direction = 0;
 		}
 
-		System.out.println("DIR " + direction + " :: " + distanceBackground);
+		/* System.out.println("DIR " + direction + " :: " + distanceBackground); */
 		return direction;
 	}
 
@@ -169,8 +180,6 @@ public class LineFollowerr {
 		motorB.setSpeed(rightSpeed);
 
 		startTime = System.nanoTime();
-		long duration = startTime - endTime;
-		endTime = startTime;
 
 		if ((leftSpeed) < 0) {
 			leftSpeed *= -1;
@@ -190,19 +199,23 @@ public class LineFollowerr {
 		}
 
 		addMove(leftSpeed, rightSpeed);
-		if (isLost && index > 0) {
-			moves.get(index - 1).setDuration(duration);
-			// System.out.println("INDEX : " + index + " MS : " + duration + "ARRAY SIZE : "
-			// + moves.size());
-
-			index++;
+		if (moves.size() >= 2) {
+			moves.get(moves.size() - 2).setDuration(startTime - endTime);
+			System.out.println("hehe");
 		}
+
+		endTime = startTime;
+
+	}
+
+	public void addTime(long duration) {
 
 	}
 
 	public void addMove(int leftSpeed, int rightSpeed) {
 		// System.out.println("IS LOST " + isLost);
 		if (isLost) {
+			System.out.println("ADDING MOVE");
 			moves.add(new Move(leftSpeed, rightSpeed));
 			// System.out.println("moves.add(new Move(" + leftSpeed + "," + rightSpeed +
 			// "));");
@@ -273,21 +286,10 @@ public class LineFollowerr {
 		 * Delay.msDelay(30); }
 		 * 
 		 * for (Move m : moves) { System.out.println(m.getLeftSpeed() + " " +
-		 * m.getRightSpeed()); motorA.setSpeed(m.getRightSpeed());
-		 * motorB.setSpeed(m.getLeftSpeed()); motorA.forward(); motorB.forward();
-		 * Delay.msDelay(30); }
-		 * 
-		 * for (Move m : moves) { System.out.println(m.getLeftSpeed() + " " +
-		 * m.getRightSpeed()); motorA.setSpeed(m.getRightSpeed());
-		 * motorB.setSpeed(m.getLeftSpeed()); motorA.forward(); motorB.forward();
-		 * Delay.msDelay(30); }
-		 * 
-		 * for (Move m : moves) { System.out.println(m.getLeftSpeed() + " " +
 		 * m.getRightSpeed()); motorA.setSpeed(m.getLeftSpeed());
-		 * motorB.setSpeed(m.getRightSpeed()); motorA.forward(); motorB.forward();
+		 * motorB.setSpeed(m.getRightSpeed()); motorA.backward(); motorB.backward();
 		 * Delay.msDelay(30); }
 		 */
-
 		/*
 		 * for (int i = 0; i < 5; i++) { motorA.setSpeed(400); motorB.setSpeed(200);
 		 * motorA.forward(); motorB.forward(); Delay.msDelay(100); }
