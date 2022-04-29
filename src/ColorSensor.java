@@ -16,6 +16,12 @@ public class ColorSensor {
 		return sensor;
 	}
 
+	public int getColorID() {
+		sensor.fetchSample(sample, 0);
+
+		return (int) sample[0];
+	}
+
 	public void setRGBMode() {
 		sensor.setCurrentMode("RGB");
 		sample = new float[sensor.sampleSize()];

@@ -1,4 +1,3 @@
-import lejos.hardware.Button;
 import lejos.robotics.Color;
 
 public class LinesData {
@@ -12,7 +11,7 @@ public class LinesData {
 	public LinesData(ColorSensor sensor) {
 		colorSensor = sensor;
 		this.calibrate();
-		this.printLinesInfo();
+		/* this.printLinesInfo(); */
 	}
 
 	public void calibrate() {
@@ -21,15 +20,28 @@ public class LinesData {
 		System.out.println("--------------");
 
 		System.out.println("Press any button to measure : Line's color");
-		Button.waitForAnyPress();
-		line = colorSensor.getColor();
+		/*
+		 * Button.waitForAnyPress(); line = colorSensor.getColor();
+		 */
+		line = new Color(65, 70, 15);
 
 		System.out.println("Press any button to measure : background's color");
-		Button.waitForAnyPress();
-		background = colorSensor.getColor();
+		/*
+		 * Button.waitForAnyPress(); background = colorSensor.getColor();
+		 */
+		background = new Color(62, 125, 56);
+		double ratioL = 0.7;
+		double ratioR = 0.3;
+		middleLineBgColor = new Color((int) (line.getRed() * ratioL + (int) background.getRed() * ratioR),
+				(int) (line.getGreen() * ratioL + background.getGreen() * ratioR),
+				(int) (line.getBlue() * ratioL + background.getBlue() * ratioR));
 
-		middleLineBgColor = new Color((line.getRed() + background.getRed()) / 2,
-				(line.getGreen() + background.getGreen()) / 2, (line.getBlue() + background.getBlue()) / 2);
+		printLinesInfo();
+		/*
+		 * middleLineBgColor = new Color((line.getRed() + background.getRed()) / 2,
+		 * (line.getGreen() + background.getGreen()) / 2, (line.getBlue() +
+		 * background.getBlue()) / 2); printLinesInfo();
+		 */
 
 		System.out.println(LinesData.calculateColorDistance(line, middleLineBgColor));
 		System.out.println(LinesData.calculateColorDistance(background, middleLineBgColor));
