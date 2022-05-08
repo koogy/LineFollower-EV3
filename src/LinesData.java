@@ -16,24 +16,29 @@ public class LinesData {
 	}
 
 	public void calibrate() {
+
 		System.out.println("Press any button to measure : Line's color");
 		Button.waitForAnyPress();
 		line = colorSensor.getColor();
 
-		/* line = new Color(65, 70, 15); */
+		/* line = new Color(70, 74, 14); */
 
 		System.out.println("Press any button to measure : background's color");
 		Button.waitForAnyPress();
 		background = colorSensor.getColor();
-
-		/* background = new Color(62, 125, 56); */
+		/*
+		 * background = new Color(66, 128, 58);
+		 */
 
 		System.out.println("Press any button to measure : intersection's color");
 		Button.waitForAnyPress();
 		intersection = colorSensor.getColor();
+		/*
+		 * intersection = new Color(5655, 12855, 555);
+		 */
 
-		double ratioL = 0.7;
-		double ratioR = 0.3;
+		double ratioL = 0.5;
+		double ratioR = 0.5;
 		middleLineBgColor = new Color((int) (line.getRed() * ratioL + (int) background.getRed() * ratioR),
 				(int) (line.getGreen() * ratioL + background.getGreen() * ratioR),
 				(int) (line.getBlue() * ratioL + background.getBlue() * ratioR));
